@@ -1,6 +1,8 @@
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
 const utils = require('util');
+require('console.table');
+const logo = require("asciiart-logo");
 
 const db = mysql.createConnection(
     {
@@ -10,12 +12,19 @@ const db = mysql.createConnection(
      
       password: 'openstreet92',
 
-      database: 'employees_db'
+      database: 'employee_db'
     },
-    console.log(`Connected to the employees_db database.`)
   );
 
 db.query = utils.promisify(db.query);
+
+function init (){
+    const logoText = logo({ name: "Employee Manager" }).render();
+    console.log(logoText);
+
+    start()
+}
+  
 
 //Start application 
 const start = async () => {
@@ -71,9 +80,11 @@ const start = async () => {
 //View all departments
 const viewDepartments = async () => {
 //SELECT * FROM department;
-    const departments = await db.query("SELECT * FROM departments");
+    const departments = await db.query("SELECT * FROM department");
 
-    console.log(departments)
+    console.table(departments);
+
+    start();
 
 }
 
@@ -81,9 +92,11 @@ const viewDepartments = async () => {
 //View all roles
 const viewRoles = async () => {
 //SELECT * FROM role;
-    const roles = await db.query("SELECT * FROM roles");
+    const roles = await db.query("SELECT * FROM role");
 
-    console.log(roles)
+    console.table(roles);
+    
+    start();
 
 }
 
@@ -91,9 +104,11 @@ const viewRoles = async () => {
 // View all employees
 const viewEmployees = async () => {
 // SELECT * FROM employees;
-    const employees = await db.query("SELECT * FROM employees")
+    const employees = await db.query("SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary, concat(manager.first_name, ' ', manager.last_name) AS manager FROM employee LEFT JOIN role on employee.role_id = role.id LEFT JOIN department ON role.department_id = department.id LEFT JOIN employee manager ON manager.id = employee.manager_id")
 
-    console.log(employees)
+    console.table(employees);
+
+    start();
 }
 
 
@@ -103,17 +118,17 @@ const createDepartment = async () => {
     const answers = await inquirer.prompt([
         {
             message: "What is the name of the department?",
-            name: "names",
+            name: "name",
             type: "input"
         }
     ]);
 //Run the query 
     await db.query(
-        "INSERT INTO departments (names) VALUES (?)",
-        [answers.names]
+        "INSERT INTO department (name) VALUES (?)",
+        [answers.name]
     )
 
-    console.log(`${answers.names} added.`)
+    console.log(`${answers.name} added.`)
 //Ask the user what they want to do next 
 start()
 
@@ -124,14 +139,13 @@ start()
 // Create a new role
 const createRole = async () => {
 // Get the existing department from the department table
-    const departments = await db.query("SELECT * FROM departments");
+    const department = await db.query("SELECT * FROM department");
 
-    const departmentChoices = departments.map( department => ({
-        department: department.names,
-        value: department.id
+    const departmentChoices = department.map( department => ({
+        value: department.id,
+        name: department.name
     }) );
 
-    console.log(departmentChoices)
 //prompt the user for "title", "Salary" and "department" for the role
     const answers = await inquirer.prompt([
         {
@@ -153,32 +167,32 @@ const createRole = async () => {
     ]);
     // INSERT INTO role (title, salary, department_id)
     await db.query(
-        "INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)",
+        "INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)",
         [answers.title, answers.salary, answers.department_id]
     )
 
 //THEN ask the user what they want to do next 
+start();
 
 }
 
 //CREATE new Employee
 const createNewEmployee = async () => {
 //Get Existing roles 
-    const roles = await db.query("SELECT * FROM roles");
+    const roles = await db.query("SELECT * FROM role");
 
     const roleChoices = roles.map( role => ({
-        role: role.title,
+        name: role.title,
         value: role.id
     }) );
 
-    const managers = await db.query("SELECT * FROM employees");
+    const managers = await db.query("SELECT * FROM employee");
 
     const managerChoices = managers.map( manager => ({
-        manager: manager.first_name,
+        name:`${manager.first_name} ${manager.last_name}`,
         value: manager.id
     }))
 
-    console.log(managerChoices)
 
     const answers = await inquirer.prompt([
         {
@@ -205,36 +219,58 @@ const createNewEmployee = async () => {
         }
     ]);
 
-    console.log(answers)
+    await db.query(
+        "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)",
+        [answers.first_name, answers.last_name, answers.role_id, answers.manager_id]
+    );
+
+    start();
 }
 
 const updateEmployee = async () => {
 
-    const employees = await db.query("SELECT * FROM employees")
+    const employees = await db.query("SELECT * FROM employee")
 
     const employeeChoices = employees.map( employee => ({
-        employee: employee.first_name, 
-        value: employee.role_id
+        name: `${employee.first_name} ${employee.last_name}`, 
+        value: employee.id
     }))
 
     const answers = await inquirer.prompt([
     {
         message: "Which employee do you want to update?",
-        name: "manager_id",
+        name: "employee_id",
         type: "list",
         choices: employeeChoices
     }
-]);
 
-    // await db.query(
-    //     "UPDATE employees SET role_id = ?",
-    //     [WHERE ]
-    // )
+    ]);
 
+    const role = await db.query("SELECT * FROM role")
+
+    const roleChoices = role.map( role => ({
+        name: role.title,
+        value: role.id
+    }))
+
+    const answers2 = await inquirer.prompt([
+        {
+            message: "What is the employees new role?",
+            name: "role_id",
+            type: "list",
+            choices: roleChoices
+        }
+    ]);
+
+    await db.query(
+        "UPDATE employee SET role_id = ? WHERE id = ?",
+        [answers2.role_id, answers.employee_id]
+    )
+
+    start()
 }
 
   
 
 
-
-updateEmployee()
+init()
