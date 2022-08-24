@@ -4,8 +4,8 @@
 
 This application utilizes mysql and inquirer to help companies keep track of their employees by roles, department, salary and track who their manager is. I felt like I didn't really know what I was doing when I first started this project, so basically how I feel everytime I start a new assignment. After going through the homework demos and reqtching some material I got the hang of it and the work started to flow. Async functions really helped make this flow! 
 
+https://user-images.githubusercontent.com/104603239/186332201-5b0d9253-505f-4eb5-b3bf-642061199a00.mp4
 
-https://user-images.githubusercontent.com/104603239/186331995-407cf40b-8b8d-4aa8-b874-e911ea9f1338.mp4
 
 ## Table of Contents 
 
