@@ -48,7 +48,7 @@ const start = async () => {
             createNewEmployee();
             break;
         case 'Update Employee Role':
-            updateEmployees();
+            updateEmployee();
             break;
         case 'View All Roles':
             viewRoles();
@@ -208,9 +208,33 @@ const createNewEmployee = async () => {
     console.log(answers)
 }
 
+const updateEmployee = async () => {
+
+    const employees = await db.query("SELECT * FROM employees")
+
+    const employeeChoices = employees.map( employee => ({
+        employee: employee.first_name, 
+        value: employee.role_id
+    }))
+
+    const answers = await inquirer.prompt([
+    {
+        message: "Which employee do you want to update?",
+        name: "manager_id",
+        type: "list",
+        choices: employeeChoices
+    }
+]);
+
+    // await db.query(
+    //     "UPDATE employees SET role_id = ?",
+    //     [WHERE ]
+    // )
+
+}
 
   
 
 
 
-createNewEmployee()
+updateEmployee()
