@@ -167,9 +167,10 @@ const createRole = async () => {
         "INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)",
         [answers.title, answers.salary, answers.department_id]
     )
+
     console.log(`${answers.title} added.`)
 //THEN ask the user what they want to do next 
-start();
+    start();
 
 }
 
