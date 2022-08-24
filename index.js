@@ -167,7 +167,7 @@ const createRole = async () => {
         "INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)",
         [answers.title, answers.salary, answers.department_id]
     )
-
+    console.log(`${answers.title} added.`)
 //THEN ask the user what they want to do next 
 start();
 
@@ -215,12 +215,14 @@ const createNewEmployee = async () => {
             choices: managerChoices
         }
     ]);
-
+//add employee to database
     await db.query(
         "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)",
         [answers.first_name, answers.last_name, answers.role_id, answers.manager_id]
     );
 
+    console.log(`${answers.first_name} ${answers.last_name} added.`)
+//ask user what they want to do next
     start();
 }
 
@@ -264,6 +266,8 @@ const updateEmployee = async () => {
         "UPDATE employee SET role_id = ? WHERE id = ?",
         [answers2.role_id, answers.employee_id]
     )
+
+console.log(`Employee updated.`)
 //ask user what they want to do next 
     start()
 }
