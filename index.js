@@ -18,6 +18,8 @@ const db = mysql.createConnection(
 
 db.query = utils.promisify(db.query);
 
+
+//pretty drawing
 function init (){
     const logoText = logo({ name: "Employee Manager" }).render();
     console.log(logoText);
@@ -25,7 +27,6 @@ function init (){
     start()
 }
   
-
 //Start application 
 const start = async () => {
 
@@ -77,6 +78,7 @@ const start = async () => {
         
     }
 }
+
 //View all departments
 const viewDepartments = async () => {
 //SELECT * FROM department;
@@ -87,7 +89,6 @@ const viewDepartments = async () => {
     start();
 
 }
-
 
 //View all roles
 const viewRoles = async () => {
@@ -100,7 +101,6 @@ const viewRoles = async () => {
 
 }
 
-
 // View all employees
 const viewEmployees = async () => {
 // SELECT * FROM employees;
@@ -110,7 +110,6 @@ const viewEmployees = async () => {
 
     start();
 }
-
 
 // Create new departments
 const createDepartment = async () => {
@@ -133,8 +132,6 @@ const createDepartment = async () => {
 start()
 
 }
-
-
 
 // Create a new role
 const createRole = async () => {
@@ -180,20 +177,20 @@ start();
 const createNewEmployee = async () => {
 //Get Existing roles 
     const roles = await db.query("SELECT * FROM role");
-
+//map roles
     const roleChoices = roles.map( role => ({
         name: role.title,
         value: role.id
     }) );
-
+//get managers
     const managers = await db.query("SELECT * FROM employee");
-
+//map managers
     const managerChoices = managers.map( manager => ({
         name:`${manager.first_name} ${manager.last_name}`,
         value: manager.id
     }))
 
-
+//prompt user
     const answers = await inquirer.prompt([
         {
             message: "What is the employees first name?",
@@ -227,15 +224,16 @@ const createNewEmployee = async () => {
     start();
 }
 
+//update Employee
 const updateEmployee = async () => {
-
+//get employees
     const employees = await db.query("SELECT * FROM employee")
-
+//map employees
     const employeeChoices = employees.map( employee => ({
         name: `${employee.first_name} ${employee.last_name}`, 
         value: employee.id
     }))
-
+//prompt user
     const answers = await inquirer.prompt([
     {
         message: "Which employee do you want to update?",
@@ -245,14 +243,14 @@ const updateEmployee = async () => {
     }
 
     ]);
-
+//get existing roles
     const role = await db.query("SELECT * FROM role")
-
+//map roles
     const roleChoices = role.map( role => ({
         name: role.title,
         value: role.id
     }))
-
+//prompt user
     const answers2 = await inquirer.prompt([
         {
             message: "What is the employees new role?",
@@ -261,16 +259,14 @@ const updateEmployee = async () => {
             choices: roleChoices
         }
     ]);
-
+//push updated to DB
     await db.query(
         "UPDATE employee SET role_id = ? WHERE id = ?",
         [answers2.role_id, answers.employee_id]
     )
-
+//ask user what they want to do next 
     start()
 }
 
-  
-
-
+//start the Application
 init()
